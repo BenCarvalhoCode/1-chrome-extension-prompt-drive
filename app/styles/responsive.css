@@ -1,0 +1,51 @@
+/* ============================================
+   Responsive — breakpoints 320px, 768px, 1024px
+   ============================================ */
+
+@media (min-width: 768px) {
+  .header {
+    padding: var(--space-lg) var(--space-xl);
+  }
+
+  .main {
+    padding: var(--space-xl);
+  }
+
+  .footer {
+    padding: var(--space-md) var(--space-xl);
+  }
+
+  .dialog {
+    max-width: 440px;
+  }
+
+  .dialog--wide {
+    max-width: 560px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 320px) {
+  .header__right {
+    gap: var(--space-xs);
+  }
+
+  .btn--sm {
+    font-size: 0.75rem;
+    padding: var(--space-xs);
+  }
+
+  .folder__header {
+    flex-wrap: wrap;
+  }
+
+  .folder__name {
+    flex-basis: 100%;
+  }
+}
