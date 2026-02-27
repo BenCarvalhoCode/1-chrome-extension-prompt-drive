@@ -1,0 +1,98 @@
+/* ============================================
+   Components — Buttons (BEM)
+   ============================================ */
+
+.btn {
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn--sm {
+  min-height: 36px;
+  min-width: auto;
+  padding: var(--space-xs) var(--space-sm);
+}
+
+/* Icon buttons — padrão da referência */
+.btn--icon {
+  padding: 0;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: var(--radius-md);
+}
+
+.btn--icon-square {
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: #fff;
+}
+
+.btn--icon-square:hover {
+  background: var(--color-border);
+}
+
+.btn--icon-circle {
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: #fff;
+}
+
+.btn--icon-circle:hover {
+  background: var(--color-border);
+}
+
+.btn--icon-primary {
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.btn--icon-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.btn--pro {
+  min-width: 44px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: white;
+}
+
+.btn--primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.btn--ghost:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.btn--danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.btn--danger:hover {
+  background: #b91c1c;
+}

@@ -6,7 +6,10 @@
 const INITIAL_STATE = {
   user: {
     id: 'user-default',
+    user_id: null,
     plan: 'free',
+    stripe_customer_id: null,
+    subscriptions: [],
     licenseKey: null,
     licenseExpiry: null,
     createdAt: Date.now(),
@@ -28,9 +31,7 @@ const INITIAL_STATE = {
     expandedFolders: {}
   },
   data: {
-    folders: {},
-    prompts: {},
-    folderPrompts: {}
+    folders: []
   }
 };
 
@@ -61,12 +62,14 @@ function notifyListeners() {
 }
 
 function getPromptCountTotal() {
-  return Object.keys(state.data.prompts).length;
+  if (!Array.isArray(state.data.folders)) return 0;
+  return state.data.folders.reduce((sum, folder) => sum + (folder.prompts?.length || 0), 0);
 }
 
 function getFolderPromptCount(folderId) {
-  const ids = state.data.folderPrompts[folderId] || [];
-  return ids.length;
+  if (!Array.isArray(state.data.folders)) return 0;
+  const folder = state.data.folders.find((f) => f.id === folderId);
+  return folder ? (folder.prompts?.length || 0) : 0;
 }
 
 const stateManager = {

@@ -31,9 +31,27 @@
   }
 }
 
+@media (max-width: 767px) {
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .header__center {
+    order: 3;
+    flex-basis: 100%;
+    max-width: 100%;
+    margin: var(--space-sm) 0 0;
+  }
+}
+
 @media (max-width: 320px) {
   .header__right {
     gap: var(--space-xs);
+  }
+
+  .btn--icon {
+    min-width: 36px;
+    min-height: 36px;
   }
 
   .btn--sm {

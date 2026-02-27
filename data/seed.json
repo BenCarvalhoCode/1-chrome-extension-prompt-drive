@@ -1,49 +1,56 @@
 {
+  "user_id": "9a8f7c6e-1234-4567-890a-bcdef1234567",
+  "plan": "premium",
+  "stripe_customer_id": null,
+  "subscriptions": [],
   "folders": [
-    { "id": "folder-1", "name": "Marketing", "createdAt": 1704067200000, "updatedAt": 1704067200000 },
-    { "id": "folder-2", "name": "Desenvolvimento", "createdAt": 1704153600000, "updatedAt": 1704153600000 },
-    { "id": "folder-3", "name": "Suporte", "createdAt": 1704240000000, "updatedAt": 1704240000000 }
-  ],
-  "prompts": [
     {
-      "id": "prompt-1",
-      "folderId": "folder-1",
-      "nome": "Post para Redes Sociais",
-      "conteudo": "Crie um post engajador para [plataforma] sobre [tema]. Inclua uma chamada para ação clara e use uma linguagem [tom].",
-      "createdAt": 1704067200000,
-      "updatedAt": 1704067200000
+      "id": "f1a2b3c4-1111-2222-3333-444455556666",
+      "name": "MarketingShare",
+      "prompts": [
+        {
+          "id": "p111aaaa-2222-bbbb-3333-cccc4444dddd",
+          "name": "Post para Redes Sociais",
+          "content": "Crie um post engajador para [plataforma] sobre [tema]. Inclua uma chamada para ação clara e use uma linguagem [tom].",
+          "created_at": "2026-02-10T14:22:11.000Z"
+        },
+        {
+          "id": "p222aaaa-2222-bbbb-3333-cccc4444eeee",
+          "name": "Email Marketing",
+          "content": "Escreva um email de marketing para promover [produto/serviço]. O email deve ser persuasivo, mas não agressivo, e destacar os principais benefícios.",
+          "created_at": "2026-02-11T09:10:45.000Z"
+        }
+      ]
     },
     {
-      "id": "prompt-2",
-      "folderId": "folder-1",
-      "nome": "Email Marketing",
-      "conteudo": "Escreva um email de marketing para promover [produto/serviço]. O email deve ser persuasivo, mas não agressivo, e destacar os principais benefícios.",
-      "createdAt": 1704070800000,
-      "updatedAt": 1704070800000
+      "id": "f2b3c4d5-2222-3333-4444-555566667777",
+      "name": "Desenvolvimento",
+      "prompts": [
+        {
+          "id": "p333aaaa-2222-bbbb-3333-cccc4444ffff",
+          "name": "Revisão de Código",
+          "content": "Revise o seguinte código [código] e forneça feedback sobre: performance, segurança, legibilidade e boas práticas.",
+          "created_at": "2026-02-12T18:05:00.000Z"
+        },
+        {
+          "id": "p444aaaa-2222-bbbb-3333-cccc4444aaaa",
+          "name": "Documentação de API",
+          "content": "Crie documentação completa para a API [nome]. Inclua exemplos de requisições, respostas e casos de uso.",
+          "created_at": "2026-02-13T10:30:00.000Z"
+        }
+      ]
     },
     {
-      "id": "prompt-3",
-      "folderId": "folder-2",
-      "nome": "Revisão de Código",
-      "conteudo": "Revise o seguinte código [código] e forneça feedback sobre: performance, segurança, legibilidade e boas práticas.",
-      "createdAt": 1704153600000,
-      "updatedAt": 1704153600000
-    },
-    {
-      "id": "prompt-4",
-      "folderId": "folder-2",
-      "nome": "Documentação de API",
-      "conteudo": "Crie documentação completa para a API [nome]. Inclua exemplos de requisições, respostas e casos de uso.",
-      "createdAt": 1704157200000,
-      "updatedAt": 1704157200000
-    },
-    {
-      "id": "prompt-5",
-      "folderId": "folder-3",
-      "nome": "Resposta de Suporte",
-      "conteudo": "Crie uma resposta profissional e empática para o seguinte problema do cliente: [descrição do problema]. A resposta deve ser clara e oferecer uma solução.",
-      "createdAt": 1704240000000,
-      "updatedAt": 1704240000000
+      "id": "f3c4d5e6-3333-4444-5555-666677778888",
+      "name": "Suporte",
+      "prompts": [
+        {
+          "id": "p555aaaa-2222-bbbb-3333-cccc4444bbbb",
+          "name": "Resposta de Suporte",
+          "content": "Crie uma resposta profissional e empática para o seguinte problema do cliente: [descrição do problema]. A resposta deve ser clara e oferecer uma solução.",
+          "created_at": "2026-02-14T15:00:00.000Z"
+        }
+      ]
     }
   ]
 }

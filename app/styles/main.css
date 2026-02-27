@@ -1,24 +1,27 @@
 /* ============================================
    Prompt DRIVE — Design System
+   Referência: tema escuro, accent teal
    ============================================ */
 
 :root {
-  --color-bg: #0f0f12;
-  --color-bg-elevated: #18181c;
-  --color-bg-card: #1e1e24;
-  --color-surface: #25252d;
-  --color-border: #2e2e38;
-  --color-text: #e8e8ed;
+  --color-bg: #252525;
+  --color-bg-elevated: #2c2c2c;
+  --color-bg-card: #2c2c2c;
+  --color-surface: #3c3c3c;
+  --color-border: #3c3c3c;
+  --color-text: #e0e0e0;
   --color-text-muted: #9a9aa8;
-  --color-accent: #7c3aed;
-  --color-accent-hover: #8b5cf6;
-  --color-accent-muted: rgba(124, 58, 237, 0.2);
-  --color-focus: #7c3aed;
-  --color-focus-ring: rgba(124, 58, 237, 0.5);
+  --color-placeholder: #707070;
+  --color-accent: #00e676;
+  --color-accent-hover: #00c853;
+  --color-accent-muted: rgba(0, 230, 118, 0.2);
+  --color-focus: #00e676;
+  --color-focus-ring: rgba(0, 230, 118, 0.5);
   --color-success: #22c55e;
   --color-danger: #dc2626;
   --color-premium: #d4af37;
   --color-premium-muted: rgba(212, 175, 55, 0.2);
+  --color-badge-free-bg: #52486b;
 
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -74,11 +77,19 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-elevated);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .header__left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.header__brand {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -86,11 +97,73 @@ body {
 
 .header__logo {
   flex-shrink: 0;
+  width: 32px;
+  height: 32px;
 }
 
 .header__title {
   font-size: 18px;
   font-weight: 600;
+}
+
+.header__title-accent {
+  color: var(--color-accent);
+}
+
+.header__counter {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.header__counter::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.header__center {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  margin: 0 var(--space-md);
+}
+
+.header__search {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  padding-left: 2.25rem;
+  background: var(--color-surface);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  position: relative;
+}
+
+.header__search::placeholder {
+  color: var(--color-placeholder);
+}
+
+.header__search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.header__search-icon {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .header__right {
@@ -100,23 +173,28 @@ body {
   flex-wrap: wrap;
 }
 
-.header__counter {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
 /* Main */
 .main {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-lg);
+  background: var(--color-bg);
 }
 
 /* Footer */
 .footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-elevated);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
+}
+
+.footer__copyright {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
 }
 
 /* Badge */
@@ -128,8 +206,8 @@ body {
 }
 
 .badge--free {
-  background: var(--color-surface);
-  color: var(--color-text-muted);
+  background: var(--color-badge-free-bg);
+  color: #fff;
 }
 
 .badge--premium {
@@ -140,6 +218,7 @@ body {
 .badge[data-plan="premium"] {
   background: var(--color-premium-muted);
   color: var(--color-premium);
+  border: 2px solid var(--color-accent);
 }
 
 /* States */
@@ -149,6 +228,25 @@ body {
   padding: var(--space-xl);
   text-align: center;
   color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  gap: var(--space-md);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--color-surface);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .error-state button {

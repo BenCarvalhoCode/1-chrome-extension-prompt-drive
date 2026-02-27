@@ -1,0 +1,78 @@
+/* ============================================
+   Components — Folder (BEM)
+   ============================================ */
+
+.folder {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.folder:hover {
+  background: var(--color-bg-elevated);
+}
+
+.folder__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+}
+
+.folder__icon {
+  font-size: 1.25rem;
+}
+
+.folder__name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.folder__count {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.folder__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.folder__actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-xs);
+  font-size: 1rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.folder__actions button:hover {
+  background: var(--color-surface);
+}
+
+.folder__prompts {
+  display: none;
+  padding: 0 var(--space-md) var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.folder__prompts--expanded {
+  display: block;
+  padding-top: var(--space-md);
+}
+
+.prompts-empty {
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}

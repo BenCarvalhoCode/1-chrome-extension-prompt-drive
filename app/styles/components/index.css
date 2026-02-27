@@ -1,0 +1,10 @@
+/* ============================================
+   Components — índice (importa todos os módulos)
+   ============================================ */
+
+@import 'buttons.css';
+@import 'folder.css';
+@import 'prompt-item.css';
+@import 'dialogs.css';
+@import 'form.css';
+@import 'toast.css';

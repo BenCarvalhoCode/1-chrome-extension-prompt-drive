@@ -27,15 +27,19 @@ function renderFoldersAndPrompts(state) {
   const mainContent = document.querySelector(DOM_IDS.mainContent);
   if (!mainContent) return;
 
-  const folders = Object.values(state.data.folders);
+  const folders = Array.isArray(state.data.folders) ? state.data.folders : [];
   if (folders.length === 0) {
     mainContent.innerHTML = '<div class="empty-state" data-testid="empty-folders">Nenhuma pasta criada ainda.</div>';
     return;
   }
 
-  const sorted = [...folders].sort((a, b) => (a.updatedAt || 0) - (b.updatedAt || 0));
+  const sorted = [...folders].sort((a, b) => {
+    const aTime = a.updatedAt || (a.prompts?.[0]?.created_at ? new Date(a.prompts[0].created_at).getTime() : 0);
+    const bTime = b.updatedAt || (b.prompts?.[0]?.created_at ? new Date(b.prompts[0].created_at).getTime() : 0);
+    return aTime - bTime;
+  });
   const html = sorted.map((folder) => {
-    const count = (state.data.folderPrompts[folder.id] || []).length;
+    const count = (folder.prompts || []).length;
     const isExpanded = !!state.ui.expandedFolders[folder.id];
     const isPremium = state.user.plan === 'premium';
     const exportBtn = isPremium
@@ -63,21 +67,19 @@ function renderFoldersAndPrompts(state) {
 }
 
 function renderPromptsList(state, folderId, isExpanded) {
-  const ids = state.data.folderPrompts[folderId] || [];
-  const prompts = ids
-    .map((id) => state.data.prompts[id])
-    .filter(Boolean)
-    .sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-  if (prompts.length === 0) {
+  const folder = (state.data.folders || []).find((f) => f.id === folderId);
+  const prompts = folder ? (folder.prompts || []) : [];
+  const sorted = [...prompts].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  if (sorted.length === 0) {
     return `<div class="prompts-empty">Nenhum prompt nesta pasta.</div>`;
   }
   if (!isExpanded) return '';
-  return prompts.map((p) => {
-    const preview = truncatePreview(p.conteudo);
+  return sorted.map((p) => {
+    const preview = truncatePreview(p.content);
     return `
       <div class="prompt-item" data-prompt-id="${p.id}">
         <div class="prompt-item__content">
-          <span class="prompt-item__name">${escapeHtml(p.nome)}</span>
+          <span class="prompt-item__name">${escapeHtml(p.name)}</span>
           <p class="prompt-item__preview">${escapeHtml(preview)}</p>
         </div>
         <div class="prompt-item__actions">
@@ -100,9 +102,10 @@ function renderHeader(state) {
   const counter = document.querySelector(DOM_IDS.promptCounter);
   const badge = document.querySelector(DOM_IDS.userPlanBadge);
   const btnImport = document.querySelector(DOM_IDS.btnImportFolder);
+  const btnLicenseKey = document.querySelector(DOM_IDS.btnLicenseKey);
   if (counter) {
     const total = getPromptCountTotal();
-    counter.textContent = state.user.plan === 'premium' ? `${total} / ∞` : `${total} / ${FREE_MAX_PROMPTS}`;
+    counter.textContent = state.user.plan === 'premium' ? `${total}/∞` : `${total}/${FREE_MAX_PROMPTS}`;
   }
   if (badge) {
     badge.textContent = state.user.plan === 'premium' ? 'Premium' : 'Free';
@@ -111,12 +114,25 @@ function renderHeader(state) {
   if (btnImport) {
     btnImport.style.display = state.user.plan === 'premium' ? '' : 'none';
   }
+  if (btnLicenseKey) {
+    if (state.user.plan === 'premium') {
+      btnLicenseKey.classList.add('btn--pro');
+      btnLicenseKey.innerHTML = 'Pro';
+      btnLicenseKey.title = 'Pro';
+      btnLicenseKey.setAttribute('aria-label', 'Pro');
+    } else {
+      btnLicenseKey.classList.remove('btn--pro');
+      btnLicenseKey.innerHTML = typeof KEY_ICON_SVG !== 'undefined' ? KEY_ICON_SVG : '';
+      btnLicenseKey.title = 'Serial Key';
+      btnLicenseKey.setAttribute('aria-label', 'Serial Key');
+    }
+  }
 }
 
 function renderMain(state) {
   if (state.ui.loading) {
     const main = document.querySelector(DOM_IDS.mainContent);
-    if (main) main.innerHTML = '<div class="loading-state">Carregando...</div>';
+    if (main) main.innerHTML = '<div class="loading-state"><div class="loading-spinner" aria-hidden="true"></div><span>Carregando...</span></div>';
     return;
   }
   if (state.ui.error) {

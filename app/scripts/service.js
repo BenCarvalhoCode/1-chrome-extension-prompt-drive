@@ -25,12 +25,34 @@ function parseImportJson(text) {
 
 function validateImportSchema(data) {
   if (!data || typeof data !== 'object') return false;
-  if (!Array.isArray(data.folders)) return false;
-  if (!Array.isArray(data.prompts)) return false;
-  for (const p of data.prompts) {
-    if (!p.id || !p.nome || !p.conteudo) return false;
+  // Novo formato: folders array com prompts aninhados (id, name, content)
+  if (Array.isArray(data.folders)) {
+    const hasNestedPrompts = data.folders.some((f) => Array.isArray(f.prompts));
+    if (hasNestedPrompts) {
+      for (const f of data.folders) {
+        if (!f.id || typeof f.name !== 'string') return false;
+        for (const p of f.prompts || []) {
+          if (!p.id || (p.name === undefined && p.nome === undefined)) return false;
+        }
+      }
+      return true;
+    }
+    // Formato legado: folders + prompts no raiz (id, nome, conteudo)
+    if (Array.isArray(data.prompts)) {
+      for (const p of data.prompts) {
+        if (!p.id || (p.nome === undefined && p.name === undefined) || (p.conteudo === undefined && p.content === undefined)) return false;
+      }
+      return true;
+    }
   }
-  return true;
+  // Formato folder + prompts (export de uma pasta)
+  if (data.folder && Array.isArray(data.prompts)) {
+    for (const p of data.prompts) {
+      if (!p.id || (p.nome === undefined && p.name === undefined) || (p.conteudo === undefined && p.content === undefined)) return false;
+    }
+    return true;
+  }
+  return false;
 }
 
 async function copyToClipboard(text) {

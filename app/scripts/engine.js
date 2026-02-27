@@ -5,21 +5,75 @@
 const SEED_PATHS = ['./data/seed.json', '/data/seed.json', 'data/seed.json'];
 
 const FALLBACK_SEED = {
+  user_id: 'user-fallback',
+  plan: 'free',
+  stripe_customer_id: null,
+  subscriptions: [],
   folders: [
-    { id: 'folder-1', name: 'Marketing', createdAt: 1704067200000, updatedAt: 1704067200000 },
-    { id: 'folder-2', name: 'Desenvolvimento', createdAt: 1704153600000, updatedAt: 1704153600000 }
-  ],
-  prompts: [
     {
-      id: 'prompt-1',
-      folderId: 'folder-1',
-      nome: 'Post para Redes Sociais',
-      conteudo: 'Crie um post engajador para [plataforma] sobre [tema].',
-      createdAt: 1704067200000,
-      updatedAt: 1704067200000
+      id: 'folder-1',
+      name: 'Marketing',
+      prompts: [
+        {
+          id: 'prompt-1',
+          name: 'Post para Redes Sociais',
+          content: 'Crie um post engajador para [plataforma] sobre [tema].',
+          created_at: new Date().toISOString()
+        }
+      ]
     }
   ]
 };
+
+function normalizeSeedData(data) {
+  const user = {
+    ...getState().user,
+    id: data.user_id ?? getState().user.id,
+    user_id: data.user_id ?? null,
+    plan: data.plan ?? 'free',
+    stripe_customer_id: data.stripe_customer_id ?? null,
+    subscriptions: Array.isArray(data.subscriptions) ? data.subscriptions : []
+  };
+
+  let folders = [];
+
+  if (Array.isArray(data.folders) && data.folders.length > 0) {
+    const hasNestedPrompts = data.folders.some((f) => Array.isArray(f.prompts));
+    if (hasNestedPrompts) {
+      folders = data.folders.map((f) => ({
+        id: f.id,
+        name: f.name || '',
+        prompts: Array.isArray(f.prompts)
+          ? f.prompts.map((p) => ({
+              id: p.id,
+              name: p.name ?? p.nome ?? '',
+              content: p.content ?? p.conteudo ?? '',
+              created_at: p.created_at ?? (p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString())
+            }))
+          : []
+      }));
+    } else {
+      const promptsByFolder = {};
+      (data.prompts || []).forEach((p) => {
+        const fid = p.folderId;
+        if (!promptsByFolder[fid]) promptsByFolder[fid] = [];
+        promptsByFolder[fid].push({
+          id: p.id,
+          name: p.nome ?? p.name ?? '',
+          content: p.conteudo ?? p.content ?? '',
+          created_at: p.created_at ?? (p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString())
+        });
+      });
+      folders = (data.folders || []).map((f) => ({
+        id: f.id,
+        name: f.name || '',
+        prompts: promptsByFolder[f.id] || []
+      }));
+    }
+  }
+
+  return { user, folders };
+}
 
 async function loadSeed() {
   for (const path of SEED_PATHS) {
@@ -40,28 +94,13 @@ async function loadSeed() {
   return normalizeSeedData(FALLBACK_SEED);
 }
 
-function normalizeSeedData(data) {
-  const folders = {};
-  const prompts = {};
-  const folderPrompts = {};
-  (data.folders || []).forEach((f) => {
-    folders[f.id] = { ...f, updatedAt: f.updatedAt ?? f.createdAt };
-    folderPrompts[f.id] = [];
-  });
-  (data.prompts || []).forEach((p) => {
-    prompts[p.id] = { ...p, updatedAt: p.updatedAt ?? p.createdAt };
-    if (!folderPrompts[p.folderId]) folderPrompts[p.folderId] = [];
-    folderPrompts[p.folderId].push(p.id);
-  });
-  return { folders, prompts, folderPrompts };
-}
-
 async function boot() {
   stateManager.setState({ ui: { ...getState().ui, loading: true, error: null } });
   try {
-    const { folders, prompts, folderPrompts } = await loadSeed();
+    const { user, folders } = await loadSeed();
     stateManager.setState({
-      data: { folders, prompts, folderPrompts },
+      user,
+      data: { folders },
       ui: { ...getState().ui, loading: false, error: null }
     });
   } catch (err) {
@@ -78,18 +117,16 @@ function handleCreateFolder(name) {
     return { success: false };
   }
   const folderId = generateId();
-  const now = Date.now();
-  const folder = { id: folderId, name: trimmed, createdAt: now, updatedAt: now };
+  const folder = { id: folderId, name: trimmed, prompts: [] };
   stateManager.setState({
     data: {
       ...getState().data,
-      folders: { ...getState().data.folders, [folderId]: folder },
-      folderPrompts: { ...getState().data.folderPrompts, [folderId]: [] }
+      folders: [...getState().data.folders, folder]
     },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, folderDialogOpen: false } }
   });
   api.createFolder({
-    userId: getState().user.id,
+    userId: getState().user.id || getState().user.user_id,
     folderId,
     folderName: trimmed
   });
@@ -104,20 +141,15 @@ function handleUpdateFolder(folderId, name) {
     return { success: false };
   }
   const folders = getState().data.folders;
-  if (!folders[folderId]) return { success: false };
-  const now = Date.now();
+  const idx = folders.findIndex((f) => f.id === folderId);
+  if (idx === -1) return { success: false };
+  const next = folders.map((f, i) => (i === idx ? { ...f, name: trimmed } : f));
   stateManager.setState({
-    data: {
-      ...getState().data,
-      folders: {
-        ...folders,
-        [folderId]: { ...folders[folderId], name: trimmed, updatedAt: now }
-      }
-    },
+    data: { ...getState().data, folders: next },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, editFolderDialogOpen: false } }
   });
   api.updateFolder({
-    userId: getState().user.id,
+    userId: getState().user.id || getState().user.user_id,
     folderId,
     folderName: trimmed
   });
@@ -127,25 +159,15 @@ function handleUpdateFolder(folderId, name) {
 
 function handleDeleteFolder(folderId, confirmName) {
   const folders = getState().data.folders;
-  const folder = folders[folderId];
+  const folder = folders.find((f) => f.id === folderId);
   if (!folder) return { success: false };
   if (confirmName !== folder.name) {
     showToast(TOAST_MESSAGES.folderNameMismatch);
     return { success: false };
   }
-  const nextFolders = { ...folders };
-  delete nextFolders[folderId];
-  const nextPrompts = { ...getState().data.prompts };
-  const promptIds = getState().data.folderPrompts[folderId] || [];
-  promptIds.forEach((id) => delete nextPrompts[id]);
-  const nextFolderPrompts = { ...getState().data.folderPrompts };
-  delete nextFolderPrompts[folderId];
+  const nextFolders = folders.filter((f) => f.id !== folderId);
   stateManager.setState({
-    data: {
-      folders: nextFolders,
-      prompts: nextPrompts,
-      folderPrompts: nextFolderPrompts
-    },
+    data: { ...getState().data, folders: nextFolders },
     ui: {
       ...getState().ui,
       dialogs: { ...getState().ui.dialogs, deleteFolderDialogOpen: false },
@@ -156,7 +178,7 @@ function handleDeleteFolder(folderId, confirmName) {
       })()
     }
   });
-  api.deleteFolder({ userId: getState().user.id, folderId });
+  api.deleteFolder({ userId: getState().user.id || getState().user.user_id, folderId });
   showToast(TOAST_MESSAGES.folderDeleted);
   return { success: true };
 }
@@ -187,88 +209,98 @@ function handleCreatePrompt(folderId, nome, conteudo) {
     showToast(TOAST_MESSAGES.limitReached);
     return { success: false };
   }
+  const folders = getState().data.folders;
+  const folderIdx = folders.findIndex((f) => f.id === fId);
+  if (folderIdx === -1) return { success: false };
   const promptId = generateId();
-  const now = Date.now();
-  const prompt = {
-    id: promptId,
-    folderId: fId,
-    nome: n,
-    conteudo: c,
-    createdAt: now,
-    updatedAt: now
-  };
-  const prompts = getState().data.prompts;
-  const folderPrompts = getState().data.folderPrompts;
-  const list = folderPrompts[fId] || [];
+  const created_at = new Date().toISOString();
+  const prompt = { id: promptId, name: n, content: c, created_at };
+  const nextFolders = folders.map((f, i) =>
+    i === folderIdx ? { ...f, prompts: [...(f.prompts || []), prompt] } : f
+  );
   stateManager.setState({
-    data: {
-      ...getState().data,
-      prompts: { ...prompts, [promptId]: prompt },
-      folderPrompts: { ...folderPrompts, [fId]: [...list, promptId] }
-    },
+    data: { ...getState().data, folders: nextFolders },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, promptDialogOpen: false } }
   });
-  api.createPrompt({ userId: getState().user.id, prompt });
+  api.createPrompt({
+    userId: getState().user.id || getState().user.user_id,
+    prompt: { id: promptId, folderId: fId, name: n, content: c, created_at }
+  });
   showToast(TOAST_MESSAGES.promptCreated);
   return { success: true };
 }
 
+function findPromptAndFolder(promptId) {
+  const folders = getState().data.folders;
+  for (let i = 0; i < folders.length; i++) {
+    const folder = folders[i];
+    const promptIdx = (folder.prompts || []).findIndex((p) => p.id === promptId);
+    if (promptIdx !== -1) return { folder, folderIdx: i, prompt: folder.prompts[promptIdx], promptIdx };
+  }
+  return null;
+}
+
 function handleUpdatePrompt(promptId, patch) {
-  const prompts = getState().data.prompts;
-  const p = prompts[promptId];
-  if (!p) return { success: false };
-  const now = Date.now();
-  const updated = { ...p, ...patch, updatedAt: now };
-  if (patch.folderId !== undefined) {
-    const oldList = getState().data.folderPrompts[p.folderId] || [];
-    const newList = (getState().data.folderPrompts[patch.folderId] || []).filter((id) => id !== promptId);
+  const found = findPromptAndFolder(promptId);
+  if (!found) return { success: false };
+  const { folder, folderIdx, prompt, promptIdx } = found;
+  const newName = patch.nome !== undefined ? patch.nome : prompt.name;
+  const newContent = patch.conteudo !== undefined ? patch.conteudo : prompt.content;
+  const newFolderId = patch.folderId !== undefined ? patch.folderId : folder.id;
+
+  if (newFolderId === folder.id) {
+    const nextPrompts = [...(folder.prompts || [])];
+    nextPrompts[promptIdx] = { ...prompt, name: newName, content: newContent };
+    const nextFolders = getState().data.folders.map((f, i) =>
+      i === folderIdx ? { ...f, prompts: nextPrompts } : f
+    );
     stateManager.setState({
-      data: {
-        ...getState().data,
-        prompts: { ...prompts, [promptId]: updated },
-        folderPrompts: {
-          ...getState().data.folderPrompts,
-          [p.folderId]: oldList.filter((id) => id !== promptId),
-          [patch.folderId]: [...newList, promptId]
-        }
-      },
+      data: { ...getState().data, folders: nextFolders },
       ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, promptEditDialogOpen: false } }
     });
   } else {
+    const folders = getState().data.folders;
+    const targetIdx = folders.findIndex((f) => f.id === newFolderId);
+    if (targetIdx === -1) return { success: false };
+    const updatedPrompt = { ...prompt, name: newName, content: newContent };
+    const nextFolders = folders.map((f, i) => {
+      if (i === folderIdx) {
+        const list = (f.prompts || []).filter((_, idx) => idx !== promptIdx);
+        return { ...f, prompts: list };
+      }
+      if (i === targetIdx) {
+        return { ...f, prompts: [...(f.prompts || []), updatedPrompt] };
+      }
+      return f;
+    });
     stateManager.setState({
-      data: {
-        ...getState().data,
-        prompts: { ...prompts, [promptId]: updated }
-      },
+      data: { ...getState().data, folders: nextFolders },
       ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, promptEditDialogOpen: false } }
     });
   }
   api.updatePrompt({
-    userId: getState().user.id,
+    userId: getState().user.id || getState().user.user_id,
     promptId,
-    patch: { folderId: patch.folderId, nome: patch.nome, conteudo: patch.conteudo }
+    patch: { folderId: newFolderId, nome: newName, conteudo: newContent }
   });
   showToast(TOAST_MESSAGES.promptUpdated);
   return { success: true };
 }
 
 function handleDeletePrompt(promptId) {
-  const prompts = getState().data.prompts;
-  const p = prompts[promptId];
-  if (!p) return { success: false };
-  const nextPrompts = { ...prompts };
-  delete nextPrompts[promptId];
-  const fid = p.folderId;
-  const list = (getState().data.folderPrompts[fid] || []).filter((id) => id !== promptId);
+  const found = findPromptAndFolder(promptId);
+  if (!found) return { success: false };
+  const { folder, folderIdx, promptIdx } = found;
+  const nextFolders = getState().data.folders.map((f, i) => {
+    if (i !== folderIdx) return f;
+    const list = (f.prompts || []).filter((_, idx) => idx !== promptIdx);
+    return { ...f, prompts: list };
+  });
   stateManager.setState({
-    data: {
-      ...getState().data,
-      prompts: nextPrompts,
-      folderPrompts: { ...getState().data.folderPrompts, [fid]: list }
-    },
+    data: { ...getState().data, folders: nextFolders },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, confirmDeletePromptDialogOpen: false } }
   });
-  api.deletePrompt({ userId: getState().user.id, promptId });
+  api.deletePrompt({ userId: getState().user.id || getState().user.user_id, promptId });
   showToast(TOAST_MESSAGES.promptDeleted);
   return { success: true };
 }
@@ -289,7 +321,7 @@ function handleActivatePremium(key) {
     },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, licenseDialogOpen: false } }
   });
-  api.activateLicenseKey({ userId: getState().user.id, licenseKey: key });
+  api.activateLicenseKey({ userId: getState().user.id || getState().user.user_id, licenseKey: key });
   const dateStr = new Date(expiry).toLocaleDateString('pt-BR');
   showToast(`${TOAST_MESSAGES.premiumActivated} ${dateStr}`);
   return { success: true };
@@ -303,12 +335,9 @@ function handleExportFolder(folderId) {
     }
     return { success: false };
   }
-  const folder = getState().data.folders[folderId];
-  const promptIds = getState().data.folderPrompts[folderId] || [];
-  const prompts = promptIds
-    .map((id) => getState().data.prompts[id])
-    .filter(Boolean);
-  const payload = { folder, prompts };
+  const folder = getState().data.folders.find((f) => f.id === folderId);
+  if (!folder) return { success: false };
+  const payload = { folder: { id: folder.id, name: folder.name, prompts: folder.prompts || [] } };
   const json = JSON.stringify(payload, null, 2);
   copyToClipboard(json)
     .then(() => showToast(TOAST_MESSAGES.exportSuccess))
@@ -327,6 +356,54 @@ function handleImportFolderIntent() {
   return true;
 }
 
+function normalizeImportToFolders(data) {
+  const isNewFormat = Array.isArray(data.folders) && data.folders.some((f) => Array.isArray(f.prompts));
+  const isFolderFormat = data.folder && Array.isArray(data.prompts);
+  const isLegacyFormat = Array.isArray(data.folders) && Array.isArray(data.prompts) && !data.folders.some((f) => Array.isArray(f.prompts));
+
+  if (isNewFormat) {
+    return data.folders.map((f) => ({
+      id: f.id,
+      name: f.name || '',
+      prompts: (f.prompts || []).map((p) => ({
+        id: p.id,
+        name: p.name ?? p.nome ?? '',
+        content: p.content ?? p.conteudo ?? '',
+        created_at: p.created_at ?? (p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString())
+      }))
+    }));
+  }
+  if (isFolderFormat) {
+    const f = data.folder;
+    const prompts = (data.prompts || []).map((p) => ({
+      id: p.id,
+      name: p.name ?? p.nome ?? '',
+      content: p.content ?? p.conteudo ?? '',
+      created_at: p.created_at ?? (p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString())
+    }));
+    return [{ id: f.id, name: f.name || '', prompts }];
+  }
+  if (isLegacyFormat) {
+    const promptsByFolder = {};
+    (data.prompts || []).forEach((p) => {
+      const fid = p.folderId;
+      if (!promptsByFolder[fid]) promptsByFolder[fid] = [];
+      promptsByFolder[fid].push({
+        id: p.id,
+        name: p.nome ?? p.name ?? '',
+        content: p.conteudo ?? p.content ?? '',
+        created_at: p.created_at ?? (p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString())
+      });
+    });
+    return (data.folders || []).map((f) => ({
+      id: f.id,
+      name: f.name || '',
+      prompts: promptsByFolder[f.id] || []
+    }));
+  }
+  return [];
+}
+
 function handleImportFolder(jsonText) {
   if (getState().user.plan !== 'premium') {
     showToast(TOAST_MESSAGES.premiumFeature);
@@ -339,30 +416,21 @@ function handleImportFolder(jsonText) {
     showToast(TOAST_MESSAGES.importError);
     return { success: false };
   }
-  const isFolderFormat = data.folder && Array.isArray(data.prompts);
-  const isStandardFormat = Array.isArray(data.folders) && Array.isArray(data.prompts);
-  let foldersToAdd = [];
-  let promptsToAdd = [];
-  if (isFolderFormat) {
-    foldersToAdd = [data.folder];
-    promptsToAdd = data.prompts || [];
-  } else if (isStandardFormat) {
-    foldersToAdd = data.folders || [];
-    promptsToAdd = data.prompts || [];
-  } else {
+  const foldersToAdd = normalizeImportToFolders(data);
+  if (foldersToAdd.length === 0) {
     showToast(TOAST_MESSAGES.importError);
     return { success: false };
   }
-  const existingIds = new Set([
-    ...Object.keys(getState().data.folders),
-    ...Object.keys(getState().data.prompts)
-  ]);
+  const existingFolders = getState().data.folders;
+  const existingIds = new Set();
+  existingFolders.forEach((f) => {
+    existingIds.add(f.id);
+    (f.prompts || []).forEach((p) => existingIds.add(p.id));
+  });
   const idMap = {};
   const nameCounts = {};
-  const folders = { ...getState().data.folders };
-  const prompts = { ...getState().data.prompts };
-  const folderPrompts = { ...getState().data.folderPrompts };
-  const now = Date.now();
+  const now = new Date().toISOString();
+  const merged = [...existingFolders];
   for (const f of foldersToAdd) {
     let fid = f.id;
     if (existingIds.has(fid)) {
@@ -370,32 +438,20 @@ function handleImportFolder(jsonText) {
       idMap[f.id] = fid;
     }
     existingIds.add(fid);
-    folders[fid] = { ...f, id: fid, createdAt: f.createdAt || now, updatedAt: now };
-    if (!folderPrompts[fid]) folderPrompts[fid] = [];
-  }
-  for (const p of promptsToAdd) {
-    let pid = p.id;
-    if (existingIds.has(pid)) pid = generateId();
-    existingIds.add(pid);
-    let fid = idMap[p.folderId] || p.folderId;
-    if (!folders[fid]) fid = Object.keys(folders)[0] || fid;
-    let nome = p.nome || 'Sem nome';
-    const base = nome.replace(/\s*\(\d+\)$/, '');
-    nameCounts[base] = (nameCounts[base] || 0) + 1;
-    if (nameCounts[base] > 1) nome = `${base} (${nameCounts[base] - 1})`;
-    prompts[pid] = {
-      id: pid,
-      folderId: fid,
-      nome,
-      conteudo: p.conteudo || '',
-      createdAt: p.createdAt || now,
-      updatedAt: now
-    };
-    if (!folderPrompts[fid]) folderPrompts[fid] = [];
-    folderPrompts[fid].push(pid);
+    const prompts = (f.prompts || []).map((p) => {
+      let pid = p.id;
+      if (existingIds.has(pid)) pid = generateId();
+      existingIds.add(pid);
+      let name = p.name || 'Sem nome';
+      const base = name.replace(/\s*\(\d+\)$/, '');
+      nameCounts[base] = (nameCounts[base] || 0) + 1;
+      if (nameCounts[base] > 1) name = `${base} (${nameCounts[base] - 1})`;
+      return { id: pid, name, content: p.content || '', created_at: p.created_at || now };
+    });
+    merged.push({ id: fid, name: f.name || '', prompts });
   }
   stateManager.setState({
-    data: { folders, prompts, folderPrompts },
+    data: { ...getState().data, folders: merged },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, importDialogOpen: false } }
   });
   showToast(TOAST_MESSAGES.importSuccess);

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prompt DRIVE</title>
   <link rel="stylesheet" href="app/styles/main.css">
-  <link rel="stylesheet" href="app/styles/components.css">
+  <link rel="stylesheet" href="app/styles/components/index.css">
   <link rel="stylesheet" href="app/styles/responsive.css">
 </head>
 <body>
@@ -15,15 +15,33 @@
     ========================= -->
     <header class="header">
       <div class="header__left">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%237c3aed' width='32' height='32' rx='6'/%3E%3Cpath fill='white' d='M8 8h16v4H8zm0 6h16v4H8zm0 6h10v4H8z'/%3E%3C/svg%3E" alt="" class="header__logo" width="32" height="32">
-        <h1 class="header__title">Prompt DRIVE</h1>
+        <div class="header__brand">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2300e676' d='M6 2h14l6 6v20H6z'/%3E%3Cpath fill='%2300c853' d='M20 2L26 2 26 8z'/%3E%3Cpath fill='white' d='M10 12h10v1H10zm0 5h10v1H10zm0 5h6v1H10z'/%3E%3C/svg%3E" alt="" class="header__logo" width="32" height="32">
+          <h1 class="header__title">Prompt <span class="header__title-accent">DRIVE</span></h1>
+        </div>
+        <span id="promptCounter" class="header__counter">0/5</span>
+      </div>
+      <div class="header__center">
+        <div class="header__search-wrap">
+          <svg class="header__search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="search" id="searchPrompts" class="header__search" placeholder="Buscar prompts..." aria-label="Buscar prompts" autocomplete="off">
+        </div>
       </div>
       <div class="header__right">
-        <button type="button" id="btnCreateFolder" class="btn btn--sm" title="Criar nova pasta" aria-label="Criar nova pasta">+ pasta</button>
-        <button type="button" id="btnCreatePrompt" class="btn btn--sm" title="Criar novo prompt" aria-label="Criar novo prompt">+ prompt</button>
-        <button type="button" id="btnImportFolder" class="btn btn--sm" title="Importar pasta" aria-label="Importar pasta" style="display:none">Importar</button>
-        <button type="button" id="btnLicenseKey" class="btn btn--ghost btn--sm" title="Serial Key" aria-label="Serial Key">Serial Key</button>
-        <span id="promptCounter" class="header__counter">0 / 5</span>
+        <button type="button" id="btnCreateFolder" class="btn btn--icon btn--icon-square btn--sm" title="Criar nova pasta" aria-label="Criar nova pasta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 12v6"/><path d="M9 15h6"/></svg>
+        </button>
+        <button type="button" id="btnCreatePrompt" class="btn btn--icon btn--icon-primary btn--sm" title="Criar novo prompt" aria-label="Criar novo prompt">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button type="button" id="btnImportFolder" class="btn btn--icon btn--icon-square btn--sm" title="Importar pasta" aria-label="Importar pasta" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <button type="button" id="btnLicenseKey" class="btn btn--icon btn--icon-circle btn--sm" title="Serial Key" aria-label="Serial Key">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        </button>
       </div>
     </header>
 
@@ -37,6 +55,7 @@
     <!-- Footer -->
     <footer class="footer">
       <span id="userPlanBadge" class="badge badge--free" data-plan="free">Free</span>
+      <span class="footer__copyright">Prompt Drive © 2024</span>
     </footer>
   </div>
 
@@ -206,6 +225,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app/scripts/constants.js"></script>
   <script src="app/scripts/states.js"></script>
   <script src="app/scripts/service.js"></script>

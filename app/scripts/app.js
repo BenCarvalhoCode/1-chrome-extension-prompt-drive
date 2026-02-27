@@ -3,6 +3,9 @@
  */
 
 (function initApp() {
+  const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUA_ANON_PUBLIC_KEY);
+  window.supabaseClient = supabaseInstance;
+
   stateManager.subscribe(render);
 
   engine.boot().then(() => {
@@ -166,7 +169,7 @@ function handleOpenImportDialog() {
 }
 
 function openEditFolderDialog(folderId) {
-  const folder = getState().data.folders[folderId];
+  const folder = getState().data.folders.find((f) => f.id === folderId);
   if (!folder) return;
   document.getElementById('editFolderId').value = folderId;
   document.getElementById('editFolderName').value = folder.name;
@@ -175,7 +178,7 @@ function openEditFolderDialog(folderId) {
 }
 
 function openDeleteFolderDialog(folderId) {
-  const folder = getState().data.folders[folderId];
+  const folder = getState().data.folders.find((f) => f.id === folderId);
   if (!folder) return;
   const nameEl = document.getElementById('deleteFolderName');
   if (nameEl) nameEl.textContent = folder.name;
@@ -186,13 +189,23 @@ function openDeleteFolderDialog(folderId) {
   setTimeout(() => document.getElementById('deleteFolderConfirm')?.focus(), 50);
 }
 
+function findPromptById(promptId) {
+  const folders = getState().data.folders || [];
+  for (const folder of folders) {
+    const prompt = (folder.prompts || []).find((p) => p.id === promptId);
+    if (prompt) return { folder, prompt };
+  }
+  return null;
+}
+
 function openEditPromptDialog(promptId) {
-  const prompt = getState().data.prompts[promptId];
-  if (!prompt) return;
+  const found = findPromptById(promptId);
+  if (!found) return;
+  const { folder, prompt } = found;
   document.getElementById('promptEditId').value = promptId;
-  document.getElementById('promptEditName').value = prompt.nome;
-  document.getElementById('promptEditConteudo').value = prompt.conteudo;
-  populateFolderSelect(document.getElementById('promptEditFolder'), prompt.folderId);
+  document.getElementById('promptEditName').value = prompt.name;
+  document.getElementById('promptEditConteudo').value = prompt.content;
+  populateFolderSelect(document.getElementById('promptEditFolder'), folder.id);
   openDialog('promptEditDialogOpen');
   setTimeout(() => document.getElementById('promptEditName')?.focus(), 50);
 }
@@ -204,7 +217,7 @@ function openConfirmDeletePromptDialog(promptId) {
 
 function populateFolderSelect(selectEl, selectedId) {
   if (!selectEl) return;
-  const folders = Object.values(getState().data.folders);
+  const folders = Array.isArray(getState().data.folders) ? getState().data.folders : [];
   selectEl.innerHTML = folders.map((f) =>
     `<option value="${f.id}" ${f.id === selectedId ? 'selected' : ''}>${escapeHtml(f.name)}</option>`
   ).join('');
@@ -262,7 +275,7 @@ function handleConfirmDeleteFolder() {
   const btn = document.querySelector('[data-action="confirm-delete-folder"]');
   const folderId = btn?.dataset?.folderId;
   const confirmName = document.getElementById('deleteFolderConfirm').value;
-  const folder = getState().data.folders[folderId];
+  const folder = getState().data.folders.find((f) => f.id === folderId);
   if (!folder) return;
   engine.handleDeleteFolder(folderId, confirmName);
 }
@@ -274,9 +287,9 @@ function handleConfirmDeletePrompt() {
 }
 
 function handleCopyPrompt(promptId) {
-  const prompt = getState().data.prompts[promptId];
-  if (!prompt) return;
-  copyToClipboard(prompt.conteudo)
+  const found = findPromptById(promptId);
+  if (!found) return;
+  copyToClipboard(found.prompt.content)
     .then(() => showToast(TOAST_MESSAGES.shareSuccess))
     .catch(() => showToast(TOAST_MESSAGES.shareError));
 }
