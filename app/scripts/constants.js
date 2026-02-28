@@ -14,6 +14,10 @@ const PREMIUM_LICENSE_DURATION_DAYS = 30;
 const SUPABASE_URL = 'https://aogrylqxlqdgfagaskiq.supabase.co';
 const SUA_ANON_PUBLIC_KEY = 'sb_publishable_3spACG8Q6U3OTdgSBAfQog_cjb4t4rW';
 
+/** Chrome.storage / localStorage key for access token */
+const ACCESS_TOKEN_STORAGE_KEY = 'ACCESS_TOKEN_DO_USUARIO';
+const USER_ID_STORAGE_KEY = 'USER_ID_DO_USUARIO';
+
 
 /**
  * Constants Sales Landing Page
@@ -39,7 +43,10 @@ const DOM_IDS = {
   licenseDialog: '#licenseDialog',
   importDialog: '#importDialog',
   foldersContainer: '#foldersContainer',
-  mainContent: '#mainContent'
+  mainContent: '#mainContent',
+  loginScreen: '#loginScreen',
+  createAccountScreen: '#createAccountScreen',
+  appContent: '#appContent'
 };
 /**
  * Toasts
@@ -54,6 +61,8 @@ const TOAST_MESSAGES = {
   promptError: 'Erro ao processar prompt',
   folderDeleted: 'Pasta removida com sucesso',
   folderDeleteError: 'Erro ao remover pasta',
+  folderDeleteNotAllowed: 'Não foi possível excluir a pasta',
+  folderDuplicateName: 'Já existe uma pasta com esse nome',
   folderNameMismatch: 'O nome digitado não confere com o nome da pasta',
   limitReached: 'Limite do plano Free atingido (5 prompts)',
   premiumActivated: 'Premium ativado até',
@@ -65,6 +74,15 @@ const TOAST_MESSAGES = {
   exportError: 'Erro ao exportar pasta',
   importSuccess: 'Importação concluída com sucesso',
   importError: 'Erro ao importar pasta - verifique o formato do JSON'
+};
+
+/** Auth / Login */
+const TOAST_AUTH = {
+  loginError: 'E-mail ou senha incorretos',
+  loginErrorGeneric: 'Erro ao fazer login. Tente novamente.',
+  createUserSuccess: 'Usuário criado com sucesso',
+  createUserError: 'Erro ao criar conta. Verifique os dados.',
+  redirecting: 'Redirecionando...'
 };
 
 const PROMPT_PREVIEW_MAX_CHARS = 100;

@@ -15,6 +15,10 @@ const INITIAL_STATE = {
     createdAt: Date.now(),
     updatedAt: Date.now()
   },
+  auth: {
+    /** 'login' | 'createAccount' | null (null = mostrando app) */
+    screen: 'login'
+  },
   ui: {
     loading: false,
     error: null,

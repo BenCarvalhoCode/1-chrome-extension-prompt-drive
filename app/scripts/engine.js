@@ -96,45 +96,102 @@ async function loadSeed() {
 
 async function boot() {
   stateManager.setState({ ui: { ...getState().ui, loading: true, error: null } });
-  try {
-    const { user, folders } = await loadSeed();
+
+  const token = await api.getStoredAccessToken();
+  if (!token || token.trim() === '') {
     stateManager.setState({
-      user,
+      auth: { screen: 'login' },
+      ui: { ...getState().ui, loading: false, error: null }
+    });
+    return;
+  }
+
+  const userId = await api.getStoredUserId();
+  if (!userId) {
+    stateManager.setState({
+      auth: { screen: 'login' },
+      ui: { ...getState().ui, loading: false, error: null }
+    });
+    return;
+  }
+
+  try {
+    const data = await api.loadUserData(userId);
+    if (!data) {
+      stateManager.setState({
+        auth: { screen: 'login' },
+        ui: { ...getState().ui, loading: false, error: null }
+      });
+      return;
+    }
+    const { user, folders } = normalizeSeedData(data);
+    stateManager.setState({
+      user: { ...user, id: userId, user_id: userId },
+      auth: { screen: null },
       data: { folders },
       ui: { ...getState().ui, loading: false, error: null }
     });
   } catch (err) {
     stateManager.setState({
+      auth: { screen: 'login' },
       ui: { ...getState().ui, loading: false, error: { message: 'Falha ao carregar dados.' } }
     });
   }
 }
 
-function handleCreateFolder(name) {
+async function handleLoginSuccess(loginResult) {
+  if (!loginResult || !loginResult.user_id && !loginResult.user?.id) return false;
+  const userId = loginResult.user_id || loginResult.user.id;
+  stateManager.setState({
+    user: {
+      ...getState().user,
+      id: userId,
+      user_id: userId
+    },
+    auth: { screen: null },
+    ui: { ...getState().ui, loading: true }
+  });
+  try {
+    const data = await api.loadUserData(userId);
+    if (!data) {
+      stateManager.setState({ ui: { ...getState().ui, loading: false } });
+      return true;
+    }
+    const { user, folders } = normalizeSeedData(data);
+    stateManager.setState({
+      user: { ...user, id: userId, user_id: userId },
+      data: { folders },
+      ui: { ...getState().ui, loading: false }
+    });
+  } catch (err) {
+    stateManager.setState({ ui: { ...getState().ui, loading: false } });
+  }
+  return true;
+}
+
+async function handleCreateFolder(name) {
   const trimmed = (name || '').trim();
   if (!trimmed) {
     showToast(TOAST_MESSAGES.folderError);
     return { success: false };
   }
-  const folderId = generateId();
-  const folder = { id: folderId, name: trimmed, prompts: [] };
+  const folder = await api.createFolder({
+    userId: getState().user.id || getState().user.user_id,
+    folderName: trimmed
+  });
+  if (!folder) return { success: false };
   stateManager.setState({
     data: {
       ...getState().data,
-      folders: [...getState().data.folders, folder]
+      folders: [...getState().data.folders, { ...folder, prompts: folder.prompts || [] }]
     },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, folderDialogOpen: false } }
-  });
-  api.createFolder({
-    userId: getState().user.id || getState().user.user_id,
-    folderId,
-    folderName: trimmed
   });
   showToast(TOAST_MESSAGES.folderCreated);
   return { success: true };
 }
 
-function handleUpdateFolder(folderId, name) {
+async function handleUpdateFolder(folderId, name) {
   const trimmed = (name || '').trim();
   if (!trimmed) {
     showToast(TOAST_MESSAGES.folderError);
@@ -143,21 +200,22 @@ function handleUpdateFolder(folderId, name) {
   const folders = getState().data.folders;
   const idx = folders.findIndex((f) => f.id === folderId);
   if (idx === -1) return { success: false };
+  const result = await api.updateFolder({
+    userId: getState().user.id || getState().user.user_id,
+    folderId,
+    folderName: trimmed
+  });
+  if (!result) return { success: false };
   const next = folders.map((f, i) => (i === idx ? { ...f, name: trimmed } : f));
   stateManager.setState({
     data: { ...getState().data, folders: next },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, editFolderDialogOpen: false } }
   });
-  api.updateFolder({
-    userId: getState().user.id || getState().user.user_id,
-    folderId,
-    folderName: trimmed
-  });
   showToast(TOAST_MESSAGES.folderUpdated);
   return { success: true };
 }
 
-function handleDeleteFolder(folderId, confirmName) {
+async function handleDeleteFolder(folderId, confirmName) {
   const folders = getState().data.folders;
   const folder = folders.find((f) => f.id === folderId);
   if (!folder) return { success: false };
@@ -165,6 +223,11 @@ function handleDeleteFolder(folderId, confirmName) {
     showToast(TOAST_MESSAGES.folderNameMismatch);
     return { success: false };
   }
+  const ok = await api.deleteFolder({
+    userId: getState().user.id || getState().user.user_id,
+    folderId
+  });
+  if (!ok) return { success: false };
   const nextFolders = folders.filter((f) => f.id !== folderId);
   stateManager.setState({
     data: { ...getState().data, folders: nextFolders },
@@ -178,7 +241,6 @@ function handleDeleteFolder(folderId, confirmName) {
       })()
     }
   });
-  api.deleteFolder({ userId: getState().user.id || getState().user.user_id, folderId });
   showToast(TOAST_MESSAGES.folderDeleted);
   return { success: true };
 }
@@ -460,6 +522,7 @@ function handleImportFolder(jsonText) {
 
 const engine = {
   boot,
+  handleLoginSuccess,
   handleCreateFolder,
   handleUpdateFolder,
   handleDeleteFolder,

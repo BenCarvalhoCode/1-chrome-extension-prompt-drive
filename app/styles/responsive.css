@@ -26,7 +26,7 @@
 
 @media (min-width: 1024px) {
   .app {
-    max-width: 480px;
+    max-width: 100%;
     margin: 0 auto;
   }
 }

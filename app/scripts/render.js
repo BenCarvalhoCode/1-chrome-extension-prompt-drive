@@ -176,7 +176,28 @@ function updateDialogsVisibility(state) {
 }
 
 function render(state) {
+  renderAuthScreens(state);
   renderHeader(state);
   renderMain(state);
   updateDialogsVisibility(state);
+}
+
+function renderAuthScreens(state) {
+  const loginEl = document.querySelector(DOM_IDS.loginScreen);
+  const createEl = document.querySelector(DOM_IDS.createAccountScreen);
+  const appEl = document.querySelector(DOM_IDS.appContent);
+  const screen = (state.auth && state.auth.screen) !== undefined ? state.auth.screen : 'login';
+
+  if (loginEl) {
+    loginEl.hidden = screen !== 'login';
+    loginEl.setAttribute('aria-hidden', screen !== 'login');
+  }
+  if (createEl) {
+    createEl.hidden = screen !== 'createAccount';
+    createEl.setAttribute('aria-hidden', screen !== 'createAccount');
+  }
+  if (appEl) {
+    appEl.hidden = screen != null;
+    appEl.setAttribute('aria-hidden', screen != null);
+  }
 }

@@ -3,14 +3,17 @@
  */
 
 (function initApp() {
-  const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUA_ANON_PUBLIC_KEY);
-  window.supabaseClient = supabaseInstance;
+  window.redirectToLogin = function () {
+    stateManager.setState({ auth: { screen: 'login' } });
+  };
 
   stateManager.subscribe(render);
 
   engine.boot().then(() => {
     document.addEventListener('click', handleGlobalClick);
     document.addEventListener('keydown', handleKeydown);
+    document.querySelector('#loginForm')?.addEventListener('submit', handleSubmitLogin);
+    document.querySelector('#createAccountForm')?.addEventListener('submit', handleSubmitCreateAccount);
     document.querySelector('#folderForm')?.addEventListener('submit', handleSubmitFolder);
     document.querySelector('#editFolderForm')?.addEventListener('submit', handleSubmitEditFolder);
     document.querySelector('#promptForm')?.addEventListener('submit', handleSubmitPrompt);
@@ -96,6 +99,15 @@ function handleGlobalClick(e) {
       break;
     case 'retry':
       engine.boot();
+      break;
+    case 'show-create-account':
+      stateManager.setState({ auth: { ...getState().auth, screen: 'createAccount' } });
+      break;
+    case 'show-login':
+      stateManager.setState({ auth: { ...getState().auth, screen: 'login' } });
+      break;
+    case 'logout':
+      handleLogout();
       break;
   }
 }
@@ -229,17 +241,17 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
-function handleSubmitFolder(e) {
+async function handleSubmitFolder(e) {
   e.preventDefault();
   const name = document.getElementById('folderName').value?.trim();
-  engine.handleCreateFolder(name);
+  await engine.handleCreateFolder(name);
 }
 
-function handleSubmitEditFolder(e) {
+async function handleSubmitEditFolder(e) {
   e.preventDefault();
   const folderId = document.getElementById('editFolderId').value;
   const name = document.getElementById('editFolderName').value?.trim();
-  engine.handleUpdateFolder(folderId, name);
+  await engine.handleUpdateFolder(folderId, name);
 }
 
 function handleSubmitPrompt(e) {
@@ -271,13 +283,13 @@ function handleSubmitImport(e) {
   engine.handleImportFolder(jsonText);
 }
 
-function handleConfirmDeleteFolder() {
+async function handleConfirmDeleteFolder() {
   const btn = document.querySelector('[data-action="confirm-delete-folder"]');
   const folderId = btn?.dataset?.folderId;
   const confirmName = document.getElementById('deleteFolderConfirm').value;
   const folder = getState().data.folders.find((f) => f.id === folderId);
   if (!folder) return;
-  engine.handleDeleteFolder(folderId, confirmName);
+  await engine.handleDeleteFolder(folderId, confirmName);
 }
 
 function handleConfirmDeletePrompt() {
@@ -302,4 +314,37 @@ function handleImportFile(e) {
     document.getElementById('importJson').value = ev.target?.result || '';
   };
   reader.readAsText(file);
+}
+
+async function handleSubmitLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail')?.value?.trim();
+  const password = document.getElementById('loginPassword')?.value;
+  if (!email || !password) return;
+  const result = await api.doLogin(email, password);
+  if (result) await engine.handleLoginSuccess(result);
+}
+
+async function handleSubmitCreateAccount(e) {
+  e.preventDefault();
+  const email = document.getElementById('createEmail')?.value?.trim();
+  const password = document.getElementById('createPassword')?.value;
+  const full_name = document.getElementById('createName')?.value?.trim();
+  if (!email || !password || !full_name) return;
+  const result = await api.createUser(email, password, full_name);
+  if (result && result.success) {
+    if (typeof showToast === 'function') showToast(TOAST_AUTH && TOAST_AUTH.redirecting ? TOAST_AUTH.redirecting : 'Redirecionando...');
+    setTimeout(() => {
+      stateManager.setState({ auth: { ...getState().auth, screen: 'login' } });
+      document.getElementById('createEmail').value = '';
+      document.getElementById('createPassword').value = '';
+      document.getElementById('createName').value = '';
+    }, 1500);
+  }
+}
+
+async function handleLogout() {
+  await api.setStoredAccessToken('');
+  await api.setStoredUserId('');
+  stateManager.setState({ auth: { screen: 'login' } });
 }

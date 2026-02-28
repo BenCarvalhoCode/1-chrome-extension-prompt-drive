@@ -96,3 +96,16 @@
 .btn--danger:hover {
   background: #b91c1c;
 }
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--with-icon {
+  gap: var(--space-sm);
+  min-width: auto;
+}
+
+.btn--with-icon svg {
+  flex-shrink: 0;
+}
