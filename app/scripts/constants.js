@@ -59,6 +59,8 @@ const TOAST_MESSAGES = {
   promptUpdated: 'Prompt atualizado com sucesso',
   promptDeleted: 'Prompt removido com sucesso',
   promptError: 'Erro ao processar prompt',
+  promptDeleteNotAllowed: 'Não foi possível excluir o prompt',
+  promptDuplicateName: 'Já existe um prompt com esse nome nesta pasta',
   folderDeleted: 'Pasta removida com sucesso',
   folderDeleteError: 'Erro ao remover pasta',
   folderDeleteNotAllowed: 'Não foi possível excluir a pasta',
@@ -82,7 +84,8 @@ const TOAST_AUTH = {
   loginErrorGeneric: 'Erro ao fazer login. Tente novamente.',
   createUserSuccess: 'Usuário criado com sucesso',
   createUserError: 'Erro ao criar conta. Verifique os dados.',
-  redirecting: 'Redirecionando...'
+  redirecting: 'Redirecionando...',
+  sessionExpired: 'Sessão expirada. Faça login novamente.'
 };
 
 const PROMPT_PREVIEW_MAX_CHARS = 100;

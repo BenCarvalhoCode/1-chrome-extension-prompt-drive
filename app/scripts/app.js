@@ -254,21 +254,21 @@ async function handleSubmitEditFolder(e) {
   await engine.handleUpdateFolder(folderId, name);
 }
 
-function handleSubmitPrompt(e) {
+async function handleSubmitPrompt(e) {
   e.preventDefault();
   const folderId = document.getElementById('promptFolder').value;
   const nome = document.getElementById('promptName').value?.trim();
   const conteudo = document.getElementById('promptConteudo').value?.trim();
-  engine.handleCreatePrompt(folderId, nome, conteudo);
+  await engine.handleCreatePrompt(folderId, nome, conteudo);
 }
 
-function handleSubmitEditPrompt(e) {
+async function handleSubmitEditPrompt(e) {
   e.preventDefault();
   const promptId = document.getElementById('promptEditId').value;
   const folderId = document.getElementById('promptEditFolder').value;
   const nome = document.getElementById('promptEditName').value?.trim();
   const conteudo = document.getElementById('promptEditConteudo').value?.trim();
-  engine.handleUpdatePrompt(promptId, { folderId, nome, conteudo });
+  await engine.handleUpdatePrompt(promptId, { folderId, nome, conteudo });
 }
 
 function handleSubmitLicense(e) {
@@ -292,10 +292,10 @@ async function handleConfirmDeleteFolder() {
   await engine.handleDeleteFolder(folderId, confirmName);
 }
 
-function handleConfirmDeletePrompt() {
+async function handleConfirmDeletePrompt() {
   const btn = document.querySelector('[data-action="confirm-delete-prompt"]');
   const promptId = btn?.dataset?.promptId;
-  if (promptId) engine.handleDeletePrompt(promptId);
+  if (promptId) await engine.handleDeletePrompt(promptId);
 }
 
 function handleCopyPrompt(promptId) {

@@ -32,7 +32,7 @@ function normalizeSeedData(data) {
     user_id: data.user_id ?? null,
     plan: data.plan ?? 'free',
     stripe_customer_id: data.stripe_customer_id ?? null,
-    subscriptions: Array.isArray(data.subscriptions) ? data.subscriptions : []
+    subscriptions: Array.isArray(data.stripe_subscriptions) ? data.stripe_subscriptions : (Array.isArray(data.subscriptions) ? data.subscriptions : [])
   };
 
   let folders = [];
@@ -73,6 +73,24 @@ function normalizeSeedData(data) {
   }
 
   return { user, folders };
+}
+
+/**
+ * Carrega e aplica ao state todos os dados do usuário logado (perfil, pastas, prompts).
+ * Usado no boot (refresh) e após login — garante que pastas e prompts vêm sempre juntos.
+ * @param {string} userId
+ * @returns {Promise<boolean>} true se dados foram carregados e aplicados, false se falhou ou 401
+ */
+async function loadAndApplyUserData(userId) {
+  if (!userId) return false;
+  const data = await api.loadUserData(userId);
+  if (!data) return false;
+  const { user, folders } = normalizeSeedData(data);
+  stateManager.setState({
+    user: { ...user, id: userId, user_id: userId },
+    data: { folders }
+  });
+  return true;
 }
 
 async function loadSeed() {
@@ -116,19 +134,16 @@ async function boot() {
   }
 
   try {
-    const data = await api.loadUserData(userId);
-    if (!data) {
+    const ok = await loadAndApplyUserData(userId);
+    if (!ok) {
       stateManager.setState({
         auth: { screen: 'login' },
         ui: { ...getState().ui, loading: false, error: null }
       });
       return;
     }
-    const { user, folders } = normalizeSeedData(data);
     stateManager.setState({
-      user: { ...user, id: userId, user_id: userId },
       auth: { screen: null },
-      data: { folders },
       ui: { ...getState().ui, loading: false, error: null }
     });
   } catch (err) {
@@ -152,20 +167,9 @@ async function handleLoginSuccess(loginResult) {
     ui: { ...getState().ui, loading: true }
   });
   try {
-    const data = await api.loadUserData(userId);
-    if (!data) {
-      stateManager.setState({ ui: { ...getState().ui, loading: false } });
-      return true;
-    }
-    const { user, folders } = normalizeSeedData(data);
-    stateManager.setState({
-      user: { ...user, id: userId, user_id: userId },
-      data: { folders },
-      ui: { ...getState().ui, loading: false }
-    });
-  } catch (err) {
-    stateManager.setState({ ui: { ...getState().ui, loading: false } });
-  }
+    await loadAndApplyUserData(userId);
+  } catch (_) { /* loadAndApplyUserData já trata erro; mantemos loading false abaixo */ }
+  stateManager.setState({ ui: { ...getState().ui, loading: false } });
   return true;
 }
 
@@ -258,7 +262,7 @@ function handleCreatePromptIntent() {
   return true;
 }
 
-function handleCreatePrompt(folderId, nome, conteudo) {
+async function handleCreatePrompt(folderId, nome, conteudo) {
   const fId = (folderId || '').trim();
   const n = (nome || '').trim();
   const c = (conteudo || '').trim();
@@ -274,19 +278,35 @@ function handleCreatePrompt(folderId, nome, conteudo) {
   const folders = getState().data.folders;
   const folderIdx = folders.findIndex((f) => f.id === fId);
   if (folderIdx === -1) return { success: false };
-  const promptId = generateId();
-  const created_at = new Date().toISOString();
-  const prompt = { id: promptId, name: n, content: c, created_at };
+
+  const existingPrompts = folders[folderIdx].prompts || [];
+  const nameLower = n.trim().toLowerCase();
+  const duplicate = existingPrompts.some((p) => (p.name || '').trim().toLowerCase() === nameLower);
+  if (duplicate) {
+    showToast(TOAST_MESSAGES.promptDuplicateName);
+    return { success: false };
+  }
+
+  const created = await api.createPrompt({
+    userId: getState().user.id || getState().user.user_id,
+    folder_id: fId,
+    name: n,
+    content: c
+  });
+  if (!created) return { success: false };
+
+  const prompt = {
+    id: created.id,
+    name: created.name ?? n,
+    content: created.content ?? c,
+    created_at: created.created_at || new Date().toISOString()
+  };
   const nextFolders = folders.map((f, i) =>
     i === folderIdx ? { ...f, prompts: [...(f.prompts || []), prompt] } : f
   );
   stateManager.setState({
     data: { ...getState().data, folders: nextFolders },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, promptDialogOpen: false } }
-  });
-  api.createPrompt({
-    userId: getState().user.id || getState().user.user_id,
-    prompt: { id: promptId, folderId: fId, name: n, content: c, created_at }
   });
   showToast(TOAST_MESSAGES.promptCreated);
   return { success: true };
@@ -302,13 +322,34 @@ function findPromptAndFolder(promptId) {
   return null;
 }
 
-function handleUpdatePrompt(promptId, patch) {
+async function handleUpdatePrompt(promptId, patch) {
   const found = findPromptAndFolder(promptId);
   if (!found) return { success: false };
   const { folder, folderIdx, prompt, promptIdx } = found;
   const newName = patch.nome !== undefined ? patch.nome : prompt.name;
   const newContent = patch.conteudo !== undefined ? patch.conteudo : prompt.content;
   const newFolderId = patch.folderId !== undefined ? patch.folderId : folder.id;
+
+  const targetFolder = getState().data.folders.find((f) => f.id === newFolderId);
+  if (targetFolder) {
+    const nameLower = (newName || '').trim().toLowerCase();
+    const hasDuplicate = (targetFolder.prompts || []).some(
+      (p) => p.id !== promptId && (p.name || '').trim().toLowerCase() === nameLower
+    );
+    if (hasDuplicate) {
+      showToast(TOAST_MESSAGES.promptDuplicateName);
+      return { success: false };
+    }
+  }
+
+  const result = await api.updatePrompt({
+    userId: getState().user.id || getState().user.user_id,
+    promptId,
+    name: newName,
+    content: newContent,
+    folder_id: newFolderId !== folder.id ? newFolderId : undefined
+  });
+  if (!result) return { success: false };
 
   if (newFolderId === folder.id) {
     const nextPrompts = [...(folder.prompts || [])];
@@ -340,19 +381,21 @@ function handleUpdatePrompt(promptId, patch) {
       ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, promptEditDialogOpen: false } }
     });
   }
-  api.updatePrompt({
-    userId: getState().user.id || getState().user.user_id,
-    promptId,
-    patch: { folderId: newFolderId, nome: newName, conteudo: newContent }
-  });
   showToast(TOAST_MESSAGES.promptUpdated);
   return { success: true };
 }
 
-function handleDeletePrompt(promptId) {
+async function handleDeletePrompt(promptId) {
   const found = findPromptAndFolder(promptId);
   if (!found) return { success: false };
-  const { folder, folderIdx, promptIdx } = found;
+  const { folderIdx, promptIdx } = found;
+
+  const ok = await api.deletePrompt({
+    userId: getState().user.id || getState().user.user_id,
+    promptId
+  });
+  if (!ok) return { success: false };
+
   const nextFolders = getState().data.folders.map((f, i) => {
     if (i !== folderIdx) return f;
     const list = (f.prompts || []).filter((_, idx) => idx !== promptIdx);
@@ -362,7 +405,6 @@ function handleDeletePrompt(promptId) {
     data: { ...getState().data, folders: nextFolders },
     ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, confirmDeletePromptDialogOpen: false } }
   });
-  api.deletePrompt({ userId: getState().user.id || getState().user.user_id, promptId });
   showToast(TOAST_MESSAGES.promptDeleted);
   return { success: true };
 }
