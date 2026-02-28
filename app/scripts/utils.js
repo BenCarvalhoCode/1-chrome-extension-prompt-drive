@@ -1,5 +1,5 @@
 /**
- * Service — operações auxiliares e helpers
+ * Utils — operações auxiliares e helpers
  * Sem persistência. Gerar IDs, parse/validate JSON, clipboard, etc.
  */
 
