@@ -41,6 +41,10 @@ function handleOpenPromptDialog() {
 }
 
 function handleOpenLicenseDialog() {
+  if (getState().user.plan === 'premium') {
+    showToast(TOAST_MESSAGES.alreadyPremium);
+    return;
+  }
   document.getElementById('licenseKey').value = '';
   openDialog('licenseDialogOpen');
   setTimeout(function () { document.getElementById('licenseKey').focus(); }, 50);

@@ -2,13 +2,18 @@
  * Core — licença, export e import
  */
 (function () {
-  function handleActivatePremium(key) {
-    if (!validateLicenseKey(key)) {
+  async function handleActivatePremium(key) {
+    const result = await api.activateLicenseKey({
+      userId: getState().user.id || getState().user.user_id,
+      licenseKey: key
+    });
+    if (!result || !result.success) {
       showToast(TOAST_MESSAGES.invalidKey);
       return { success: false };
     }
-    const now = Date.now();
-    const expiry = now + PREMIUM_LICENSE_DURATION_DAYS * 24 * 60 * 60 * 1000;
+    const expiry = result.expiry != null
+      ? result.expiry
+      : Date.now() + PREMIUM_LICENSE_DURATION_DAYS * 24 * 60 * 60 * 1000;
     stateManager.setState({
       user: {
         ...getState().user,
@@ -18,7 +23,6 @@
       },
       ui: { ...getState().ui, dialogs: { ...getState().ui.dialogs, licenseDialogOpen: false } }
     });
-    api.activateLicenseKey({ userId: getState().user.id || getState().user.user_id, licenseKey: key });
     const dateStr = new Date(expiry).toLocaleDateString('pt-BR');
     showToast(TOAST_MESSAGES.premiumActivated + ' ' + dateStr);
     return { success: true };

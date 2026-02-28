@@ -1,9 +1,10 @@
 /**
  * API — License: activateLicenseKey
+ * Retorna Promise<{ success: boolean, expiry?: number }>. Sem backend, retorna { success: false }.
  */
 (function () {
   function activateLicenseKey(payload) {
-    console.log('[API] activateLicenseKey', payload);
+    return Promise.resolve({ success: false });
   }
 
   window.api = window.api || {};

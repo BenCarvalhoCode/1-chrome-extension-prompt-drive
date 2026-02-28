@@ -5,7 +5,6 @@
 /**
  * Constants Application
  */
-const GOD_KEY_TO_PREMIUM_ACTIVATE = 'Kjajhist#@123';
 const FREE_MAX_PROMPTS = 5;
 const PREMIUM_LICENSE_DURATION_DAYS = 30;
 /**
@@ -70,6 +69,7 @@ const TOAST_MESSAGES = {
   premiumActivated: 'Premium ativado até',
   invalidKey: 'Chave inválida',
   premiumFeature: 'Recurso Premium - Ative o Premium para usar esta funcionalidade',
+  alreadyPremium: 'Você já é premium',
   shareSuccess: 'Prompt copiado para a área de transferência!',
   shareError: 'Falha ao compartilhar prompt',
   exportSuccess: 'Pasta exportada com sucesso!',

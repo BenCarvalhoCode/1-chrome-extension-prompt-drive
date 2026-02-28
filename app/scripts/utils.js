@@ -14,10 +14,6 @@ function generateId() {
   });
 }
 
-function validateLicenseKey(key) {
-  return key === GOD_KEY_TO_PREMIUM_ACTIVATE;
-}
-
 function parseImportJson(text) {
   const cleanText = text.trim().replace(/^[\uFEFF\u200B-\u200D\u2060]/g, '');
   return JSON.parse(cleanText);
