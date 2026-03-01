@@ -23,6 +23,9 @@ const USER_ID_STORAGE_KEY = 'USER_ID_DO_USUARIO';
  */
 const SALES_LANDING_PAGE_URL = 'https://www.sample.com';
 
+/** Stripe Payment Link (base URL; append ?client_reference_id=userId) */
+const STRIPE_CHECKOUT_URL = 'https://buy.stripe.com/test_aFa4gzgqwahhatP7wRa3u00';
+
 /**
  * Documents IDs
  */

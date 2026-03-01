@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prompt DRIVE</title>
+  <title>Prompt Drive</title>
   <link rel="stylesheet" href="app/styles/main.css">
   <link rel="stylesheet" href="app/styles/components/index.css">
   <link rel="stylesheet" href="app/styles/responsive.css">
@@ -16,8 +16,11 @@
     <div class="auth-screen" id="loginScreen" aria-hidden="true" hidden>
       <div class="auth-screen__card">
         <div class="auth-screen__brand">
-          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2300e676' d='M6 2h14l6 6v20H6z'/%3E%3Cpath fill='%2300c853' d='M20 2L26 2 26 8z'/%3E%3Cpath fill='white' d='M10 12h10v1H10zm0 5h10v1H10zm0 5h6v1H10z'/%3E%3C/svg%3E" alt="" class="auth-screen__logo" width="40" height="40">
-          <h1 class="auth-screen__title">Prompt <span class="auth-screen__title-accent">DRIVE</span></h1>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Crect x='4' y='6' width='24' height='20' rx='2.5' stroke='%2300e676' stroke-width='1.8'/%3E%3Cpath d='M4 12h24' stroke='%2300e676' stroke-width='1.8'/%3E%3Cpath d='M10 18h8' stroke='%2300e676' stroke-opacity='.7' stroke-width='1.5'/%3E%3C/svg%3E" alt="" class="auth-screen__logo" width="40" height="40">
+          <div class="auth-screen__brand-text">
+            <h1 class="auth-screen__title">Prompt <span class="auth-screen__title-accent">DRIVE</span></h1>
+            <p class="auth-screen__subtitle">Organize seus prompts</p>
+          </div>
         </div>
         <form id="loginForm" class="auth-screen__form" data-action="submit-login">
           <div class="form-group">
@@ -75,13 +78,16 @@
     <header class="header">
       <div class="header__left">
         <div class="header__brand">
-          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2300e676' d='M6 2h14l6 6v20H6z'/%3E%3Cpath fill='%2300c853' d='M20 2L26 2 26 8z'/%3E%3Cpath fill='white' d='M10 12h10v1H10zm0 5h10v1H10zm0 5h6v1H10z'/%3E%3C/svg%3E" alt="" class="header__logo" width="32" height="32">
-          <h1 class="header__title">Prompt <span class="header__title-accent">DRIVE</span></h1>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Crect x='4' y='6' width='24' height='20' rx='2.5' stroke='%2300e676' stroke-width='1.8'/%3E%3Cpath d='M4 12h24' stroke='%2300e676' stroke-width='1.8'/%3E%3Cpath d='M10 18h8' stroke='%2300e676' stroke-opacity='.7' stroke-width='1.5'/%3E%3C/svg%3E" alt="" class="header__logo" width="32" height="32">
+          <div class="header__brand-text">
+            <h1 class="header__title">Prompt <span class="header__title-accent">Drive</span></h1>
+            <p class="header__subtitle">Organize seus prompts</p>
+          </div>
         </div>
       </div>
       <div class="header__center">
         <div class="header__search-wrap">
-          <svg class="header__search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="header__search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
           <input type="search" id="searchPrompts" class="header__search" placeholder="Buscar prompts..." aria-label="Buscar prompts" autocomplete="off">
@@ -89,20 +95,17 @@
       </div>
       <div class="header__right">
         <button type="button" id="btnCreateFolder" class="btn btn--ghost btn--with-icon" title="Criar nova pasta" aria-label="Criar nova pasta">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 12v6"/><path d="M9 15h6"/></svg>
-          <span>Nova pasta</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M2 10h20"/></svg>
+          <span class="btn__label">Nova pasta</span>
         </button>
         <button type="button" id="btnCreatePrompt" class="btn btn--primary btn--with-icon" title="Criar novo prompt" aria-label="Criar novo prompt">
-          <span>+ Novo prompt</span>
+          <span class="btn__icon-only" aria-hidden="true">+</span>
+          <span class="btn__label">+ Novo prompt</span>
         </button>
         <button type="button" id="btnImportFolder" class="btn btn--icon btn--icon-square btn--sm" title="Importar pasta" aria-label="Importar pasta" style="display:none">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </button>
-        <button type="button" id="btnLicenseKey" class="btn btn--icon btn--icon-circle btn--sm" title="Serial Key" aria-label="Serial Key">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-        </button>
         <span id="promptCounter" class="header__counter">0/5</span>
-        <button type="button" class="btn btn--ghost" data-action="logout">Sair</button>
       </div>
     </header>
 
@@ -115,8 +118,18 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <span id="userPlanBadge" class="badge badge--free" data-plan="free">Free</span>
-      <span class="footer__copyright">Prompt Drive © 2024</span>
+      <div class="footer__left">
+        <span id="userPlanBadge" class="badge badge--free" data-plan="free">Free</span>
+      </div>
+      <span class="footer__copyright">Prompt Drive © 2026</span>
+      <div class="footer__right">
+        <div class="footer__actions">
+          <button type="button" id="btnLicenseKey" class="btn btn--icon btn--icon-circle btn--sm" title="Serial Key" aria-label="Serial Key">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          </button>
+          <button type="button" class="btn btn--ghost" data-action="logout">Sair</button>
+        </div>
+      </div>
     </footer>
     </div>
   </div>
@@ -248,20 +261,35 @@
     </div>
   </div>
 
-  <!-- License Dialog -->
+  <!-- License Dialog (benefícios Free vs Pro + checkout Stripe) -->
   <div class="dialog-overlay" id="licenseDialog" role="dialog" aria-labelledby="licenseDialogTitle" aria-modal="true" aria-hidden="true" hidden>
     <div class="dialog">
-      <h2 id="licenseDialogTitle" class="dialog__title">Ativar Premium</h2>
-      <form id="licenseForm" class="dialog__form" data-action="submit-license">
-        <div class="form-group">
-          <label for="licenseKey">Chave de licença</label>
-          <input type="text" id="licenseKey" name="licenseKey" autocomplete="off">
+      <h2 id="licenseDialogTitle" class="dialog__title">Assine o Pro</h2>
+      <div class="dialog__body">
+        <p class="dialog__intro">Compare os planos e assine o Pro para desbloquear todos os recursos.</p>
+        <div class="plans-compare">
+          <div class="plans-compare__col">
+            <h3 class="plans-compare__title">Free</h3>
+            <ul class="plans-compare__list">
+              <li>Até 5 prompts</li>
+              <li>Pastas ilimitadas</li>
+              <li>—</li>
+            </ul>
+          </div>
+          <div class="plans-compare__col plans-compare__col--pro">
+            <h3 class="plans-compare__title">Pro</h3>
+            <ul class="plans-compare__list">
+              <li>Prompts ilimitados</li>
+              <li>Exportar e importar pastas</li>
+              <li>Checkout seguro via Stripe</li>
+            </ul>
+          </div>
         </div>
-        <div class="dialog__actions">
-          <button type="button" class="btn btn--ghost" data-action="close-license">Cancelar</button>
-          <button type="submit" class="btn btn--primary">Ativar</button>
-        </div>
-      </form>
+      </div>
+      <div class="dialog__actions">
+        <button type="button" class="btn btn--ghost" data-action="close-license">Fechar</button>
+        <button type="button" class="btn btn--primary" data-action="open-stripe-checkout">Ir para o checkout</button>
+      </div>
     </div>
   </div>
 

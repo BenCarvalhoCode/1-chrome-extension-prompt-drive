@@ -95,6 +95,8 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-xs);
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .header__brand {
@@ -103,15 +105,31 @@ body {
   gap: var(--space-sm);
 }
 
+.header__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .header__logo {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
+  display: block;
 }
 
 .header__title {
   font-size: 18px;
   font-weight: 600;
+  line-height: 1.2;
+}
+
+.header__subtitle {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.2;
 }
 
 .header__title-accent {
@@ -171,7 +189,9 @@ body {
   width: 16px;
   height: 16px;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.8;
+  color: var(--color-text-muted);
+  z-index: 2;
 }
 
 .header__right {
@@ -204,6 +224,30 @@ body {
 .footer__copyright {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
+  flex: 0 0 auto;
+  text-align: center;
+}
+
+.footer__left {
+  flex: 1;
+}
+
+.footer__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.footer__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.btn--key-gold svg {
+  stroke: var(--color-premium);
 }
 
 /* Badge */
@@ -227,7 +271,6 @@ body {
 .badge[data-plan="premium"] {
   background: var(--color-premium-muted);
   color: var(--color-premium);
-  border: 2px solid var(--color-accent);
 }
 
 /* States */
@@ -298,19 +341,38 @@ body {
 }
 
 .auth-screen__brand {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  text-align: left;
   margin-bottom: var(--space-xl);
 }
 
 .auth-screen__logo {
-  display: block;
-  margin: 0 auto var(--space-md);
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.auth-screen__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .auth-screen__title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-text);
+  line-height: 1.2;
+}
+
+.auth-screen__subtitle {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.2;
 }
 
 .auth-screen__title-accent {

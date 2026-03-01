@@ -109,3 +109,10 @@
 .btn--with-icon svg {
   flex-shrink: 0;
 }
+
+.btn__icon-only {
+  display: none;
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1;
+}

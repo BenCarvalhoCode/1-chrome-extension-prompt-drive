@@ -31,10 +31,10 @@ async function handleSubmitEditPrompt(e) {
   await engine.handleUpdatePrompt(promptId, { folderId: folderId, nome: nome, conteudo: conteudo });
 }
 
-function handleSubmitLicense(e) {
-  e.preventDefault();
-  const key = document.getElementById('licenseKey')?.value?.trim();
-  engine.handleActivatePremium(key);
+async function handleConfirmDeletePrompt() {
+  const btn = document.querySelector('[data-action="confirm-delete-prompt"]');
+  const promptId = btn && btn.dataset.promptId;
+  if (promptId) await engine.handleDeletePrompt(promptId);
 }
 
 function handleSubmitImport(e) {
@@ -50,10 +50,4 @@ async function handleConfirmDeleteFolder() {
   const folder = getState().data.folders.find(function (f) { return f.id === folderId; });
   if (!folder) return;
   await engine.handleDeleteFolder(folderId, confirmName);
-}
-
-async function handleConfirmDeletePrompt() {
-  const btn = document.querySelector('[data-action="confirm-delete-prompt"]');
-  const promptId = btn && btn.dataset.promptId;
-  if (promptId) await engine.handleDeletePrompt(promptId);
 }

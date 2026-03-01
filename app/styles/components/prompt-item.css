@@ -13,6 +13,16 @@
   margin-bottom: var(--space-sm);
 }
 
+.prompt-item__marker {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-top: 0.5rem;
+  margin-right: var(--space-xs);
+}
+
 .prompt-item__content {
   flex: 1;
   min-width: 0;

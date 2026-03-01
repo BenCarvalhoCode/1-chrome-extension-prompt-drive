@@ -56,6 +56,51 @@
   padding: var(--space-lg);
 }
 
+.dialog__intro {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-md);
+}
+
+.plans-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+.plans-compare__col {
+  padding: var(--space-md);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+}
+
+.plans-compare__col--pro {
+  border: 1px solid var(--color-accent);
+}
+
+.plans-compare__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-sm);
+}
+
+.plans-compare__col--pro .plans-compare__title {
+  color: var(--color-accent);
+}
+
+.plans-compare__list {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  padding-left: 1rem;
+  list-style: disc;
+}
+
+.plans-compare__list li {
+  margin-bottom: var(--space-xs);
+}
+
 .dialog__form {
   padding: var(--space-lg);
 }

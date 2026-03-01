@@ -17,7 +17,6 @@
     document.querySelector('#editFolderForm')?.addEventListener('submit', handleSubmitEditFolder);
     document.querySelector('#promptForm')?.addEventListener('submit', handleSubmitPrompt);
     document.querySelector('#promptEditForm')?.addEventListener('submit', handleSubmitEditPrompt);
-    document.querySelector('#licenseForm')?.addEventListener('submit', handleSubmitLicense);
     document.querySelector('#importForm')?.addEventListener('submit', handleSubmitImport);
     document.querySelector('#btnCreateFolder')?.addEventListener('click', handleOpenFolderDialog);
     document.querySelector('#btnCreatePrompt')?.addEventListener('click', handleOpenPromptDialog);

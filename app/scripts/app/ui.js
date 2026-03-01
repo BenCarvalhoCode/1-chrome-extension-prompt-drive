@@ -61,6 +61,24 @@ function handleGlobalClick(e) {
     case 'close-license':
       closeDialog('licenseDialogOpen');
       break;
+    case 'open-stripe-checkout': {
+      const state = getState();
+      const userId = state.user?.id || state.user?.user_id;
+      if (!userId) {
+        if (typeof showToast === 'function') showToast(TOAST_MESSAGES.premiumFeature || 'Faça login para continuar.');
+        return;
+      }
+      const url = typeof STRIPE_CHECKOUT_URL !== 'undefined'
+        ? STRIPE_CHECKOUT_URL + '?client_reference_id=' + encodeURIComponent(userId)
+        : '';
+      if (url && typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
+        chrome.tabs.create({ url: url });
+      } else if (url) {
+        window.open(url, '_blank');
+      }
+      closeDialog('licenseDialogOpen');
+      break;
+    }
     case 'close-import':
       closeDialog('importDialogOpen');
       break;

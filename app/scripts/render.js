@@ -78,6 +78,7 @@ function renderPromptsList(state, folderId, isExpanded) {
     const preview = truncatePreview(p.content);
     return `
       <div class="prompt-item" data-prompt-id="${p.id}">
+        <span class="prompt-item__marker" aria-hidden="true"></span>
         <div class="prompt-item__content">
           <span class="prompt-item__name">${escapeHtml(p.name)}</span>
           <p class="prompt-item__preview">${escapeHtml(preview)}</p>
@@ -116,12 +117,14 @@ function renderHeader(state) {
   }
   if (btnLicenseKey) {
     if (state.user.plan === 'premium') {
+      btnLicenseKey.classList.remove('btn--key-gold');
       btnLicenseKey.classList.add('btn--pro');
       btnLicenseKey.innerHTML = 'Pro';
       btnLicenseKey.title = 'Pro';
       btnLicenseKey.setAttribute('aria-label', 'Pro');
     } else {
       btnLicenseKey.classList.remove('btn--pro');
+      btnLicenseKey.classList.add('btn--key-gold');
       btnLicenseKey.innerHTML = typeof KEY_ICON_SVG !== 'undefined' ? KEY_ICON_SVG : '';
       btnLicenseKey.title = 'Serial Key';
       btnLicenseKey.setAttribute('aria-label', 'Serial Key');

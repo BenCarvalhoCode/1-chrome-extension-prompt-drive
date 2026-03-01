@@ -45,9 +45,7 @@ function handleOpenLicenseDialog() {
     showToast(TOAST_MESSAGES.alreadyPremium);
     return;
   }
-  document.getElementById('licenseKey').value = '';
   openDialog('licenseDialogOpen');
-  setTimeout(function () { document.getElementById('licenseKey').focus(); }, 50);
 }
 
 function handleOpenImportDialog() {
